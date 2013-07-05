@@ -19,3 +19,4 @@ Setup
 -----
 1. In `index.html` replace all instances of `YOUR_*` with the appropriate values
 2. `parse deploy`
+
