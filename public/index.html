@@ -1,0 +1,108 @@
+<html xmlns:fb="http://ogp.me/ns/fb#">
+<head>
+  <meta charset="utf-8">
+  <title>Parse Facebook Example</title>
+  <script type="text/javascript" src="//code.jquery.com/jquery-latest.js"></script>
+  <script type="text/javascript" src="//www.parsecdn.com/js/parse-1.2.8.min.js"></script>
+</head>
+
+<body>
+  <div id="fb-root"></div>
+  <div><h1>Welcome to a Parse/Facebook sample app</h1></div>
+  <div id="profilepic"></div>
+  <p id="welcome"></p>
+  <a href="#" id="login-button" class="logged-out">Login with Facebook</a>
+  <a href="#" id="logout-button" class="logged-in">Logout</a>
+</div>
+
+<script>
+var App = App || {};
+
+// When user logs out hide logout button and remove user data
+App.logOut = function(){
+  $(".logged-out").show();
+  $(".logged-in").hide();
+  $("#welcome").text("");
+  $("#profilepic").html("");
+  if(Parse.User.current()) {
+    Parse.User.logOut();
+    FB.logout();  // Unfortunately due to a parse bug we need to log the user out of Facebook (July 3, 2013)
+  }
+};
+
+// When user logs in show logout button, user name and pic
+App.logIn = function(){
+  $(".logged-out").hide();
+  $(".logged-in").show();
+  $("#welcome").text("Welcome " + Parse.User.current().get('name'));
+  $("#profilepic").html('<img src="https://graph.facebook.com/' + Parse.User.current().attributes.authData.facebook.id + '/picture">')
+};
+
+// Initialize Parse with Parse app_id and javascript_key
+Parse.initialize("YOUR_PARSE_APP_ID", "YOUR_PARSE_JAVASCRIPT_KEY");
+
+// Initialize the Facebook SDK with Parse as described at
+// https://parse.com/docs/js_guide#fbusers
+window.fbAsyncInit = function() {
+  // init the FB JS SDK
+  Parse.FacebookUtils.init({
+    appId      : 'YOUR_FACEBOOK_APP_ID', // Facebook App ID
+    channelUrl : '//YOUR_PARSE_APP.parseapp.com/channel.html', // Channel File
+    cookie     : true, // enable cookies to allow Parse to access the session
+    xfbml      : true  // parse XFBML
+  });
+};
+
+// Post initialization - if we have a current user let's show the logged in view
+// Additional post init code can be added here
+
+if (Parse.User.current()) {App.logIn()} else {App.logOut()}
+
+(function(d, debug){
+ var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+ if (d.getElementById(id)) {return;}
+ js = d.createElement('script'); js.id = id; js.async = true;
+ js.src = "//connect.facebook.net/en_US/all" + (debug ? "/debug" : "") + ".js";
+ ref.parentNode.insertBefore(js, ref);
+}(document, /*debug*/ true));
+
+// Login user and populate with Facebook Data
+// This logs a user in via Facebook and creates a linked user on Parse
+$("#login-button").click(function() {
+  if (Parse.User.current()) {
+    console.log("User already logged in");
+    App.loggedIn();
+  } else {
+    // Use Parse to log user into Facebook
+    Parse.FacebookUtils.logIn("email,publish_actions", {
+      success: function(user) {
+        if (!user.existed()) {
+          console.log("User signed up and logged in through Facebook");
+          // Let's get some data from Facebook to add to our user record
+          FB.api('/me/', function(response) {
+            console.log("Saving user data to parse")
+            user.save({email: response.email, name: response.name}).then(function(user){ App.logIn();})
+          });
+        } else {
+          console.log("Existing user logged in through Facebook");
+          App.logIn();
+        }
+      },
+      error: function(user, error) {
+        console.log("User cancelled the Facebook login or did not fully authorize.");
+        console.log(error);
+}})}})
+
+
+$(document).ready(function() {
+  $("#logout-button").click(function() {
+    console.log("Logout");
+    App.logOut();
+  });
+})
+
+</script>
+
+</body>
+
+</html>

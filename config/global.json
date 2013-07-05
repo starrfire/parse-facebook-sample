@@ -1,0 +1,14 @@
+{
+    "applications": {
+        "Parse Facebook Sample App": {
+            "applicationId": "YOUR_PARSE_APP_ID",
+            "masterKey": "YOUR_PARSE_MASTER_KEY"
+        },
+        "_default": {
+            "link": "Your app"
+        }
+    },
+    "global": {
+        "parseVersion": "1.2.8"
+    }
+}
