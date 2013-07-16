@@ -26,7 +26,9 @@ App.logOut = function(){
   $("#profilepic").html("");
   if(Parse.User.current()) {
     Parse.User.logOut();
-    FB.logout();  // Unfortunately due to a parse bug we need to log the user out of Facebook (July 3, 2013)
+    // Unfortunately due to a problem with the interaction between Parse and Facebook's SDKs
+    // we need to log the user out of Facebook too [as of July 16, 2013]
+    FB.logout();
   }
 };
 
